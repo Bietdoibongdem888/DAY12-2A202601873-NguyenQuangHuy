@@ -160,7 +160,12 @@ Ghi lại **một** lỗi bạn gặp khi deploy lên cloud (build fail, health 
 timeout, sai REDIS_URL, app không đọc `$PORT`...): thông báo lỗi là gì, bạn
 tìm ra nguyên nhân bằng cách nào, và sửa ra sao?
 
-> `REQUIRES_REAL_RUN`: chưa có credential và chưa thực hiện deploy cloud nên
-> chưa có lỗi deploy thật để báo cáo. Khi deploy, cần chép nguyên thông báo lỗi,
-> nguồn bằng chứng trong build/runtime log, nguyên nhân đã xác định và thay đổi
-> khắc phục; không thay bằng một tình huống giả định.
+> Lần sync Blueprint đầu tiên lỗi thật với thông báo
+> `cannot have more than 1 free tier Key Value instance`; thao tác tạo web service
+> sau đó bị hủy với `canceled: another action failed`. Trang Workspace cho thấy
+> `day12-redis` Free đã tồn tại và ở trạng thái Available, nên Blueprint không thể
+> tạo thêm một Key Value Free thứ hai. Tôi dùng đúng hai resource đã tồn tại là
+> `day12-agent` và `day12-redis`, kiểm tra lại `REDIS_URL` của web service trỏ tới
+> private connection URL của Key Value, rồi bổ sung generated secret
+> `AGENT_API_KEY` và rebuild. Sau deploy, kiểm tra thật cho kết quả `/health` 200,
+> `/ready` 200 với `redis=true`, `/ask` không khóa trả 401 và có khóa trả 200.
