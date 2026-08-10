@@ -12,6 +12,7 @@ balancer ngừng đẩy traffic mới vào → xử lý nốt request đang ch�
 from __future__ import annotations
 
 import signal
+import threading
 
 
 class Lifecycle:
@@ -21,11 +22,12 @@ class Lifecycle:
         self.shutting_down = False
         # Handler đã được đăng ký trước ta (của uvicorn) — xem install()
         self._previous: dict = {}
+        self._installed = False
 
     def request_shutdown(self, signum=None, frame=None) -> None:
         """Signal handler: đánh dấu process đang tắt dần.
 
-        TODO (CP4):
+        Các bước:
           1. ``self.shutting_down = True``
           2. Gọi lại handler cũ nếu có::
 
@@ -44,19 +46,32 @@ class Lifecycle:
         tham số này. Không làm gì nặng ở đây (không gọi mạng, không ghi file)
         — handler chạy xen giữa bytecode.
         """
-        raise NotImplementedError("TODO (CP4): cài đặt request_shutdown")
+        self.shutting_down = True
+        previous = self._previous.get(signum)
+        if callable(previous) and previous != self.request_shutdown:
+            previous(signum, frame)
 
     def install(self) -> None:
         """Đăng ký handler cho SIGTERM và SIGINT, nhớ lại handler cũ.
 
-        TODO (CP4): với mỗi tín hiệu trong ``(signal.SIGTERM, signal.SIGINT)``:
+        Với mỗi tín hiệu trong ``(signal.SIGTERM, signal.SIGINT)``:
 
             self._previous[sig] = signal.getsignal(sig)   # nhớ handler cũ
             signal.signal(sig, self.request_shutdown)     # rồi mới ghi đè
 
         SIGTERM: orchestrator yêu cầu tắt. SIGINT: bạn bấm Ctrl+C.
         """
-        raise NotImplementedError("TODO (CP4): cài đặt install")
+        if self._installed:
+            return
+        # Python chỉ cho đăng ký signal handler ở main thread. ASGI test
+        # clients có thể chạy lifespan trong worker thread; production Uvicorn
+        # vẫn cài handler bình thường ở main thread.
+        if threading.current_thread() is not threading.main_thread():
+            return
+        for sig in (signal.SIGTERM, signal.SIGINT):
+            self._previous[sig] = signal.getsignal(sig)
+            signal.signal(sig, self.request_shutdown)
+        self._installed = True
 
 
 # Một instance dùng chung cho cả app

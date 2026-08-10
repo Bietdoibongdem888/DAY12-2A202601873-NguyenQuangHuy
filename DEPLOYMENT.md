@@ -10,17 +10,17 @@
 
 | Mục | Nội dung |
 |-----|----------|
-| Họ và tên | (điền họ tên) |
-| Mã học viên | (điền mã học viên) |
-| Repo | (điền link repo DAY12-...) |
+| Họ và tên | Nguyễn Quang Huy |
+| Mã học viên | 2A202601873 |
+| Repo | https://github.com/Bietdoibongdem888/DAY12-2A202601873-NguyenQuangHuy |
 
 ## Service
 
 | Mục | Nội dung |
 |-----|----------|
-| Public URL | https://TODO-thay-bang-url-that.up.railway.app |
-| Platform | Railway / Render / Cloud Run — (điền platform bạn dùng) |
-| Ngày deploy | (điền ngày) |
+| Public URL | `REQUIRES_REAL_RUN` — chưa có URL công khai |
+| Platform | Railway (kế hoạch ưu tiên; chưa triển khai) |
+| Ngày deploy | `REQUIRES_REAL_RUN` |
 
 ## Biến Môi Trường Đã Set Trên Cloud
 
@@ -28,31 +28,31 @@ Ghi tên biến và **nguồn giá trị**, không ghi giá trị:
 
 | Biến | Đã set | Ghi chú |
 |------|--------|---------|
-| `PORT` | ✅ | platform tự gán |
-| `AGENT_API_KEY` | ✅ | đặt trong dashboard, không nằm trong repo |
-| `REDIS_URL` | ✅ | (điền: Redis add-on của platform / Upstash / ...) |
-| `RATE_LIMIT_PER_MINUTE` | ✅ | 10 |
-| `MONTHLY_BUDGET_USD` | ✅ | 10.0 |
-| `LOG_LEVEL` | ✅ | INFO |
+| `PORT` | ⏳ | platform sẽ tự gán |
+| `AGENT_API_KEY` | ⏳ | phải đặt trong dashboard, không nằm trong repo |
+| `REDIS_URL` | ⏳ | phải lấy từ Redis add-on của platform |
+| `RATE_LIMIT_PER_MINUTE` | ⏳ | cấu hình dự kiến: 10 |
+| `MONTHLY_BUDGET_USD` | ⏳ | cấu hình dự kiến: 10.0 |
+| `LOG_LEVEL` | ⏳ | cấu hình dự kiến: INFO |
 
 ## Lệnh Kiểm Tra
 
-Thay `<URL>` bằng Public URL ở trên:
+Gán Public URL thật vào biến `PUBLIC_URL` trước khi chạy các lệnh dưới đây:
 
 ```bash
 # 1. Liveness — mong đợi 200 {"status":"ok"}
-curl -i <URL>/health
+curl -i "$PUBLIC_URL/health"
 
 # 2. Readiness — mong đợi 200 {"status":"ready"} (đã nối được Redis)
-curl -i <URL>/ready
+curl -i "$PUBLIC_URL/ready"
 
 # 3. Không có API key — mong đợi 401
-curl -i -X POST <URL>/ask \
+curl -i -X POST "$PUBLIC_URL/ask" \
   -H "Content-Type: application/json" \
   -d '{"question":"Hello"}'
 
 # 4. Có API key — mong đợi 200 kèm câu trả lời
-curl -i -X POST <URL>/ask \
+curl -i -X POST "$PUBLIC_URL/ask" \
   -H "Content-Type: application/json" \
   -H "X-API-Key: $AGENT_API_KEY" \
   -H "X-User-Id: sv-test" \
@@ -60,7 +60,7 @@ curl -i -X POST <URL>/ask \
 
 # 5. Rate limit — gọi 15 lần, những lần cuối phải trả 429
 for i in $(seq 1 15); do
-  curl -s -o /dev/null -w "%{http_code} " -X POST <URL>/ask \
+  curl -s -o /dev/null -w "%{http_code} " -X POST "$PUBLIC_URL/ask" \
     -H "Content-Type: application/json" \
     -H "X-API-Key: $AGENT_API_KEY" \
     -H "X-User-Id: sv-test" \
@@ -72,8 +72,8 @@ done; echo
 
 Dán output của các lệnh trên vào đây:
 
-```
-(điền output)
+```text
+REQUIRES_REAL_RUN — chưa có output từ service cloud.
 ```
 
 ## Ảnh Chụp Màn Hình
@@ -96,6 +96,6 @@ Không đăng ký được tài khoản cloud? Vẫn nộp được bài, nhưng
    `http://localhost:8000`
 5. Ghi rõ lý do không deploy được vào phần dưới đây:
 
-```
-(điền lý do nếu dùng phương án dự phòng, ngược lại xóa mục này)
-```
+Không bật phương án dự phòng vì Docker daemon không chạy và ổ C chỉ còn
+khoảng 270 MiB trống, không đủ an toàn để build image hoặc chạy stack.
+Trạng thái này được ghi rõ để không tạo bằng chứng deploy giả.
