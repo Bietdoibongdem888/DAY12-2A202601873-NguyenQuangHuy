@@ -51,9 +51,9 @@ jobs:
       PUBLIC_URL: ${{ vars.PUBLIC_URL }}
     steps:
       - name: Trigger deployment
+        if: env.DEPLOY_HOOK_URL != ''
         run: |
-          test -n "$DEPLOY_HOOK_URL"
           curl --fail --silent --show-error --request POST "$DEPLOY_HOOK_URL"
       - name: Smoke test
-        if: env.PUBLIC_URL != ''
+        if: env.DEPLOY_HOOK_URL != '' && env.PUBLIC_URL != ''
         run: curl --fail --silent --show-error --retry 12 --retry-delay 10 "$PUBLIC_URL/health"
