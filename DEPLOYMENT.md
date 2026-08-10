@@ -19,7 +19,7 @@
 | Mục | Nội dung |
 |-----|----------|
 | Public URL | `REQUIRES_REAL_RUN` — chưa có URL công khai |
-| Platform | Railway (kế hoạch ưu tiên; chưa triển khai) |
+| Platform | Render Blueprint (chưa triển khai) |
 | Ngày deploy | `REQUIRES_REAL_RUN` |
 
 ## Biến Môi Trường Đã Set Trên Cloud
